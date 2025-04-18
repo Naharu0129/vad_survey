@@ -26,7 +26,7 @@ class WordResource(resources.ModelResource):
     class Meta:
         model = Word
         import_id_fields = ['text']
-        fields = ('text', 'valence_score', 'arousal_score', 'dominance_score')
+        fields = ('text', 'POS','valence_score', 'arousal_score', 'dominance_score')
 
 
 # Word 모델 관리자 페이지
