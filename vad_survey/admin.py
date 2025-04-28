@@ -32,10 +32,12 @@ class WordResource(resources.ModelResource):
 # Word 모델 관리자 페이지
 class WordAdmin(ImportExportModelAdmin):
     resource_class = WordResource
-    list_display = ('text', 'valence_score', 'arousal_score', 'dominance_score', 'total_ratings')
+    list_display = ('text', 'POS','valence_score', 'arousal_score', 'dominance_score', 'total_ratings')
+    list_filter = ('POS', )
     search_fields = ('text',)
     actions = ['generate_bws_tuples']
     change_list_template = 'admin/word_changelist.html'
+    list_max_show_all = 100000
 
     def get_urls(self):
         urls = super().get_urls()
@@ -76,7 +78,8 @@ class WordAdmin(ImportExportModelAdmin):
             self.message_user(request, f"BWS 튜플 생성이 완료되었습니다. (차원: {dimension})")
             return HttpResponseRedirect("../")
 
-    def generate_bws_tuples(self, modeladmin, request, queryset):
+    @admin.action(description="선택한 단어로 BWS 튜플 생성")
+    def generate_bws_tuples(self, request, queryset):
         """선택된 단어들로 BWS 튜플 생성 (액션)"""
         # 모든 단어 대신 선택된 단어만 사용
         if not queryset.exists():
@@ -85,12 +88,12 @@ class WordAdmin(ImportExportModelAdmin):
 
         # 간단한 버전 - 기본 설정으로 튜플 생성
         words = list(queryset.values_list('text', flat=True))
-
+        word_ids = list(queryset.values_list('id', flat=True))
         # 기본 차원에 대해 튜플 생성
         dimension = 'V'
 
         from django.core.management import call_command
-        call_command('generate_bws_tuples', dimension=dimension)
+        call_command('generate_bws_tuples', dimension=dimension, word_ids=",".join(map(str, word_ids)))
 
         self.message_user(
             request,
@@ -105,22 +108,12 @@ class WordTupleAdmin(admin.ModelAdmin):
     list_display = ('id', 'dimension', 'display_words', 'is_gold', 'created_at')
     list_filter = ('dimension', 'is_gold', 'created_at')
     search_fields = ('words__text',)
+    list_max_show_all = 100000
 
     def display_words(self, obj):
         return ", ".join([word.text for word in obj.words.all()])
-    display_words.short_description = "단어"
 
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        # gold_best_word나 gold_worst_word 선택 시 해당 tuple에 있는 단어만 보여주기
-        if db_field.name in ['gold_best_word', 'gold_worst_word']:
-            try:
-                object_id = request.resolver_match.kwargs.get('object_id')
-                if object_id:
-                    word_tuple = WordTuple.objects.get(pk=object_id)
-                    kwargs["queryset"] = word_tuple.words.all()
-            except WordTuple.DoesNotExist:
-                pass
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    display_words.short_description = "단어"
 
 
 # 사용자-튜플 할당 필터
@@ -575,17 +568,6 @@ class RatingAdmin(admin.ModelAdmin):
             ])
 
         return response
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name in ['best_word', 'worst_word']:
-            try:
-                object_id = request.resolver_match.kwargs.get('object_id')
-                if object_id:
-                    from .models import Rating  # 안전하게 import
-                    rating = Rating.objects.get(pk=object_id)
-                    kwargs["queryset"] = rating.word_tuple.words.all()
-            except:
-                pass
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 # 기타 모델 관리자 등록
 admin.site.register(Word, WordAdmin)

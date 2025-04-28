@@ -5,6 +5,7 @@ from django.utils import timezone
 
 class Word(models.Model):
     text = models.CharField(max_length=100)
+    POS = models.CharField(max_length=100)
     valence_score = models.FloatField(null=True, blank=True)  # VAD 점수 필드 추가
     arousal_score = models.FloatField(null=True, blank=True)
     dominance_score = models.FloatField(null=True, blank=True)

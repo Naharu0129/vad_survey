@@ -29,9 +29,13 @@
                 <div class="space-y-4">
                     <label class="block text-lg font-medium text-gray-700">
                         {% if dimension.code == 'V' %}
-                        아래 4개의 단어 중 '행복한', '기쁜', '긍정적인', '만족스러운', '흡족한', '기대되는'과 가장 관련된 단어는 무엇인가요?
+                        아래 4개의 단어 중
+                        <span class="font-bold">'행복한', '기쁜', '긍정적인', '만족스러운', '흡족한', '기대되는'</span>
+                        과 가장 관련된 단어는 무엇인가요?
                         {% elif dimension.code == 'A' %}
-                        아래 4개의 단어 중 '긴장하는', '활기찬', '자극적인', '흥분된', '과민한', '깨어있는'과 가장 관련된 단어는 무엇인가요?
+                        아래 4개의 단어 중
+                        <span class="font-bold">'긴장하는', '활기찬', '자극적인', '흥분된', '과민한', '깨어있는'</span>
+                        과 가장 관련된 단어는 무엇인가요?
                         {% elif dimension.code == 'D' %}
                         가장 높은 Dominance의 단어 선택
                         {% else %}
@@ -52,9 +56,13 @@
                 <div class="space-y-4">
                     <label class="block text-lg font-medium text-gray-700">
                         {% if dimension.code == 'V' %}
-                        아래 4개의 단어 중 '불행한', '성내는', '부정적인', '불만스러운', '울적한', '절망적인'과 가장 관련된 단어는 무엇인가요?
+                        아래 4개의 단어 중 
+                        <span class="font-bold">'불행한', '성내는', '부정적인', '불만스러운', '울적한', '절망적인'</span>
+                        과 가장 관련된 단어는 무엇인가요?
                         {% elif dimension.code == 'A' %}
-                        아래 4개의 단어 중 '긴장풀린', '수동적인', '이완된', '차분한', '느린', '둔한', '나른한'과 가장 관련된 단어는 무엇인가요?
+                        아래 4개의 단어 중 
+                        <span class="font-bold">'긴장풀린', '수동적인', '이완된', '차분한', '느린', '둔한', '나른한'</span>
+                        과 가장 관련된 단어는 무엇인가요?
                         {% elif dimension.code == 'D' %}
                         가장 낮은 지배력/통제력을 나타내는 단어 선택:
                         {% else %}

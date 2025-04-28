@@ -20,8 +20,14 @@ class Command(BaseCommand):
                             help='Dimension for tuples (V=Valence, A=Arousal, D=Dominance, default: V)')
         parser.add_argument('--random-seed', type=int, default=1234,
                             help='Random seed for reproducibility (default: 1234)')
-
+        parser.add_argument('--word-ids', type=str, default=None, help='Comma‑separated list of Word primary‑key IDs to include')
     def handle(self, *args, **options):
+        word_ids_opt = options.get('word_ids')
+        if word_ids_opt:
+            id_list = [int(pk) for pk in word_ids_opt.split(',') if pk]
+            words_qs = Word.objects.filter(id__in=id_list)
+        else:
+            words_qs = Word.objects.all()
         items_per_tuple = options['items_per_tuple']
         scaling_factor = options['scaling_factor']
         num_iterations = options['iterations']
@@ -39,9 +45,10 @@ class Command(BaseCommand):
         )
 
         # 데이터베이스에서 단어 가져오기
-        words = list(Word.objects.values_list('text', flat=True))
-        if not words:
-            raise CommandError('No words found in the database')
+        words = list(words_qs)
+        if len(words) < items_per_tuple:
+            self.stderr.write("단어 수가 tuple 크기보다 적습니다.")
+            return
 
         self.stdout.write(f"Found {len(words)} words in the database")
         self.stdout.write(f"Generating {round(scaling_factor * len(words))} {items_per_tuple}-tuples...")
@@ -138,7 +145,7 @@ class BWSTupleGenerator:
                 for i in range(len(tuple_items)):
                     for k in range(i + 1, len(tuple_items)):
                         # 쌍을 정렬하여 저장 (A,B와 B,A를 같은 것으로 처리)
-                        pair = tuple(sorted([tuple_items[i], tuple_items[k]]))
+                        pair = tuple(sorted([tuple_items[i],tuple_items[k]], key=lambda w: w.id))
                         freq_pair[str(pair)] = freq_pair.get(str(pair), 0) + 1
 
             # 투웨이 밸런스 점수 계산 (쌍 빈도의 표준편차)
